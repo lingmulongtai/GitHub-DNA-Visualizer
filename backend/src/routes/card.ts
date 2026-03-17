@@ -3,11 +3,12 @@ import { generateCardData, CardData } from '../services/cardGenerator';
 
 export const cardRouter = Router();
 
-cardRouter.post('/generate', (req, res) => {
+cardRouter.post('/generate', async (req, res) => {
   try {
     const cardData: CardData = req.body;
-    const result = generateCardData(cardData);
-    res.json({ success: true, data: result });
+    const svg = await generateCardData(cardData);
+    res.setHeader('Content-Type', 'image/svg+xml');
+    res.send(svg);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Card generation failed';
     res.status(500).json({ error: message });
