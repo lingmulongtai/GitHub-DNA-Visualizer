@@ -8,6 +8,8 @@ interface UseGithubDataReturn {
   fetchData: (username: string) => Promise<void>;
 }
 
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? '';
+
 export function useGithubData(): UseGithubDataReturn {
   const [data, setData] = useState<GitHubData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -19,7 +21,7 @@ export function useGithubData(): UseGithubDataReturn {
     setData(null);
 
     try {
-      const response = await fetch(`/api/user/${encodeURIComponent(username)}`);
+      const response = await fetch(`${API_BASE}/api/user/${encodeURIComponent(username)}`);
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' })) as { error?: string };
         throw new Error(errorData.error ?? `HTTP ${response.status}`);
