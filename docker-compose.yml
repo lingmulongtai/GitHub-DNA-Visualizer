@@ -1,0 +1,37 @@
+version: '3.9'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      # Set GITHUB_TOKEN in your .env file or environment for higher GitHub API rate limits
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+      # Allow requests from the frontend container and the host browser
+      - CORS_ORIGIN=http://localhost,http://localhost:80
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/api/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Browser makes requests to the backend, so this must be the host-accessible URL
+        - VITE_API_URL=http://localhost:3001
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
