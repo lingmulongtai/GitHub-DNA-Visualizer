@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts';
@@ -26,24 +25,22 @@ function CustomTooltip({ active, payload, lang }: CustomTooltipProps) {
   if (!active || !payload || payload.length === 0) return null;
   const repo = payload[0].payload;
   return (
-    <div className="bg-gh-surface border border-gh-border rounded-lg p-3 max-w-xs">
-      <p className="text-white font-bold text-sm">{repo.name}</p>
-      {repo.description && (
-        <p className="text-gh-muted text-xs mt-1">{repo.description}</p>
-      )}
+    <div className="bg-gh-elevated border border-white/[0.12] rounded-lg p-3 max-w-xs text-xs">
+      <p className="text-gh-text font-medium">{repo.name}</p>
+      {repo.description && <p className="text-gh-muted mt-1">{repo.description}</p>}
       <div className="mt-2 flex items-center gap-2">
         {repo.language && (
           <span
-            className="text-xs px-2 py-0.5 rounded-full"
+            className="px-2 py-0.5 rounded"
             style={{
-              background: `${getLanguageColor(repo.language)}33`,
+              background: `${getLanguageColor(repo.language)}26`,
               color: getLanguageColor(repo.language),
             }}
           >
             {repo.language}
           </span>
         )}
-        <span className="text-gh-muted text-xs">
+        <span className="text-gh-subtle font-mono">
           {lang === 'ja' ? '更新:' : 'Updated:'} {new Date(repo.updated_at).toLocaleDateString()}
         </span>
       </div>
@@ -62,65 +59,50 @@ export function StarDistribution({ repos, lang }: StarDistributionProps) {
 
   if (top10.length === 0) {
     return (
-      <motion.div
-        className="bg-gh-surface border border-gh-border rounded-xl p-6"
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-      >
-        <h3 className="text-lg font-bold text-white mb-4">⭐ {t(lang, 'starSection')}</h3>
-        <p className="text-gh-muted text-sm">{lang === 'ja' ? 'スター付きリポジトリがありません' : 'No starred repositories found'}</p>
-      </motion.div>
+      <section className="bg-gh-surface border border-white/[0.08] rounded-xl p-6">
+        <h3 className="text-base font-medium text-gh-text mb-2">{t(lang, 'starSection')}</h3>
+        <p className="text-gh-muted text-sm">{lang === 'ja' ? 'スター付きリポジトリがありません。' : 'No starred repositories found.'}</p>
+      </section>
     );
   }
 
   return (
-    <motion.div
-      className="bg-gh-surface border border-gh-border rounded-xl p-6"
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5 }}
-    >
-      <h3 className="text-lg font-bold text-white mb-6">
-        ⭐ {t(lang, 'starSection')}
-      </h3>
+    <section className="bg-gh-surface border border-white/[0.08] rounded-xl p-6">
+      <h3 className="text-base font-medium text-gh-text mb-5">{t(lang, 'starSection')}</h3>
 
       <div className="h-80">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            data={top10}
-            layout="vertical"
-            margin={{ left: 16, right: 32, top: 0, bottom: 0 }}
-          >
+          <BarChart data={top10} layout="vertical" margin={{ left: 16, right: 24, top: 0, bottom: 0 }}>
             <XAxis
               type="number"
-              tick={{ fill: '#8b949e', fontSize: 11 }}
+              tick={{ fill: '#9898a0', fontSize: 11 }}
               tickFormatter={(v: number) => v >= 1000 ? `${(v / 1000).toFixed(1)}k` : String(v)}
+              axisLine={false}
+              tickLine={false}
             />
             <YAxis
               type="category"
               dataKey="displayName"
-              tick={{ fill: '#c9d1d9', fontSize: 11 }}
-              width={100}
+              tick={{ fill: '#f2f2f3', fontSize: 11 }}
+              width={110}
+              axisLine={false}
+              tickLine={false}
             />
             <Tooltip content={<CustomTooltip lang={lang} />} />
             <Bar
               dataKey="stargazers_count"
               radius={[0, 4, 4, 0]}
+              isAnimationActive={false}
               onMouseEnter={(_: unknown, index: number) => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(null)}
             >
               {top10.map((_, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={hoveredIndex === index ? '#bc8cff' : '#58a6ff'}
-                />
+                <Cell key={`cell-${index}`} fill={hoveredIndex === index ? '#ededed' : '#38bdf8'} />
               ))}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
-    </motion.div>
+    </section>
   );
 }
