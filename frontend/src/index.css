@@ -3,64 +3,32 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    color-scheme: dark;
+  }
+
   body {
-    background-color: #0d1117;
-    color: #c9d1d9;
+    background-color: #0f0f10;
+    color: #f2f2f3;
+    font-family: "Instrument Sans", "Noto Sans JP", system-ui, -apple-system, sans-serif;
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
-}
-
-@layer utilities {
-  .gradient-text {
-    background: linear-gradient(135deg, #58a6ff, #bc8cff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .gradient-border {
-    border: 1px solid transparent;
-    background-clip: padding-box;
-  }
-}
-
-/* DNA Loading Animation */
-.dna-loader {
-  position: relative;
-  width: 60px;
-  height: 100px;
-}
-
-.dna-strand {
-  position: absolute;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  animation: dna-wave 1.5s ease-in-out infinite;
-}
-
-.dna-strand:nth-child(even) {
-  background: #58a6ff;
-}
-
-.dna-strand:nth-child(odd) {
-  background: #bc8cff;
-}
-
-@keyframes dna-wave {
-  0%, 100% { transform: translateX(0); }
-  50% { transform: translateX(40px); }
 }
 
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #161b22;
+  background: #141415;
 }
 ::-webkit-scrollbar-thumb {
-  background: #30363d;
+  background: rgba(255, 255, 255, 0.14);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #58a6ff;
+  background: rgba(255, 255, 255, 0.24);
 }

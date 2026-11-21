@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter, Routes, Route, useSearchParams, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import { ProfileHeader } from './components/ProfileHeader';
 import { LanguageDNA } from './components/LanguageDNA';
 import { ActivityHeatmap } from './components/ActivityHeatmap';
@@ -19,6 +18,21 @@ function t(lang: Language, key: keyof typeof translations.ja): string {
   return translations[lang][key];
 }
 
+function BrandMark() {
+  return (
+    <span className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-white/15 bg-gh-elevated text-gh-blue">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M8 4c0 6 8 6 8 12" />
+        <path d="M16 4c0 6-8 6-8 12" />
+        <path d="M8 8h8" />
+        <path d="M8 16h8" />
+      </svg>
+    </span>
+  );
+}
+
+const SAMPLE_HANDLES = ['torvalds', 'gaearon', 'sindresorhus'];
+
 function VisualizerPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -33,11 +47,11 @@ function VisualizerPage() {
     const trimmed = name.trim();
     if (!trimmed) return;
     setUsername(trimmed);
+    setInputValue(trimmed);
     setSearchParams({ user: trimmed });
     fetchData(trimmed);
   }, [fetchData, setSearchParams]);
 
-  // Initialize from URL params on first mount only
   useEffect(() => {
     if (hasInitialized.current) return;
     hasInitialized.current = true;
@@ -52,24 +66,27 @@ function VisualizerPage() {
   const scores = data ? calculatePersonalityScores(data) : null;
 
   return (
-    <div className="min-h-screen bg-gh-bg">
-      {/* Header */}
-      <header className="border-b border-gh-border sticky top-0 z-50 bg-gh-bg/95 backdrop-blur">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🧬</span>
-            <span className="font-bold text-white hidden sm:inline">GitHub DNA Visualizer</span>
+    <div className="min-h-screen bg-gh-bg text-gh-text flex flex-col">
+      <header className="border-b border-white/[0.08] sticky top-0 z-50 bg-gh-bg/95 backdrop-blur">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <BrandMark />
+            <span className="font-medium text-sm tracking-[-0.01em] text-gh-text">
+              GitHub DNA Visualizer
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={() => navigate('/compare')}
-              className="px-3 py-1.5 text-xs border border-gh-border text-gh-muted rounded-lg hover:border-gh-blue hover:text-gh-blue transition-colors"
+              className="h-8 px-3 text-xs font-medium border border-white/[0.12] bg-gh-surface text-gh-muted rounded-md hover:border-white/25 hover:text-gh-text transition-colors"
+              type="button"
             >
               {t(lang, 'compareMode')}
             </button>
             <button
               onClick={() => setLang(l => l === 'ja' ? 'en' : 'ja')}
-              className="px-3 py-1.5 text-xs border border-gh-border text-gh-muted rounded-lg hover:border-gh-blue hover:text-gh-blue transition-colors"
+              className="h-8 px-2.5 text-xs font-mono border border-white/[0.12] bg-gh-surface text-gh-muted rounded-md hover:border-white/25 hover:text-gh-text transition-colors"
+              type="button"
             >
               {lang === 'ja' ? 'EN' : 'JA'}
             </button>
@@ -77,135 +94,160 @@ function VisualizerPage() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-8">
-        {/* Hero */}
-        <div className="text-center mb-12">
-          <motion.h1
-            className="text-4xl sm:text-5xl font-bold mb-4"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <span className="gradient-text">{t(lang, 'title')}</span>
-          </motion.h1>
-          <motion.p
-            className="text-gh-muted text-lg"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
+      <main className="flex-1 w-full max-w-5xl mx-auto px-4 sm:px-6 py-12">
+        <section className="max-w-2xl mb-10">
+          <p className="text-xs font-mono text-gh-muted mb-2">
+            {lang === 'ja' ? 'GitHub プロフィール解析ワークベンチ' : 'GitHub profile analytics workbench'}
+          </p>
+          <h1 className="text-3xl sm:text-4xl font-medium tracking-[-0.03em] text-gh-text mb-3">
+            {t(lang, 'title')}
+          </h1>
+          <p className="text-gh-muted text-sm sm:text-base leading-relaxed">
             {t(lang, 'subtitle')}
-          </motion.p>
-        </div>
+          </p>
+        </section>
 
-        {/* Search */}
-        <motion.div
-          className="flex gap-2 mb-8 max-w-lg mx-auto"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <input
-            type="text"
-            value={inputValue}
-            onChange={e => setInputValue(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleSearch(inputValue)}
-            placeholder={t(lang, 'placeholder')}
-            className="flex-1 bg-gh-surface border border-gh-border rounded-lg px-4 py-3 text-gh-text placeholder-gh-muted font-mono focus:outline-none focus:border-gh-blue transition-colors"
-          />
-          <button
-            onClick={() => handleSearch(inputValue)}
-            disabled={loading}
-            className="px-6 py-3 rounded-lg font-semibold text-white transition-all disabled:opacity-50"
-            style={{ background: 'linear-gradient(135deg, #58a6ff, #bc8cff)' }}
-          >
-            {loading ? t(lang, 'searching') : t(lang, 'search')}
-          </button>
-        </motion.div>
+        <section className="mb-8">
+          <div className="flex flex-col sm:flex-row gap-2 max-w-xl">
+            <div className="relative flex-1">
+              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-sm text-gh-subtle">
+                @
+              </span>
+              <input
+                type="text"
+                value={inputValue}
+                onChange={e => setInputValue(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleSearch(inputValue)}
+                placeholder={t(lang, 'placeholder')}
+                className="w-full h-11 bg-gh-surface border border-white/[0.12] rounded-lg pl-8 pr-4 text-sm text-gh-text placeholder:text-gh-subtle font-mono focus:outline-none focus:border-gh-blue transition-colors"
+              />
+            </div>
+            <button
+              onClick={() => handleSearch(inputValue)}
+              disabled={loading}
+              className="h-11 px-5 rounded-lg text-sm font-medium bg-[#ededed] text-[#0f0f10] hover:bg-white transition-colors disabled:opacity-45"
+              type="button"
+            >
+              {loading ? t(lang, 'searching') : t(lang, 'search')}
+            </button>
+          </div>
 
-        {/* Rate limit indicator */}
-        {data?.rateLimit.remaining !== null && data && (
-          <div className="text-center mb-4">
-            <span className="text-xs text-gh-muted font-mono">
-              {t(lang, 'rateLimit')}: {data.rateLimit.remaining}/{data.rateLimit.limit} {t(lang, 'remaining')}
-            </span>
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-gh-muted">
+            <span>{lang === 'ja' ? 'サンプル:' : 'Examples:'}</span>
+            {SAMPLE_HANDLES.map((handle) => (
+              <button
+                key={handle}
+                onClick={() => handleSearch(handle)}
+                className="font-mono px-2 py-0.5 rounded border border-white/[0.08] bg-gh-surface text-gh-muted hover:border-white/20 hover:text-gh-text transition-colors"
+                type="button"
+              >
+                @{handle}
+              </button>
+            ))}
+            {data?.rateLimit.remaining !== null && data && (
+              <span className="ml-auto font-mono text-gh-subtle">
+                {t(lang, 'rateLimit')}: {data.rateLimit.remaining}/{data.rateLimit.limit} {t(lang, 'remaining')}
+              </span>
+            )}
+          </div>
+        </section>
+
+        {loading && (
+          <div className="flex justify-center py-16">
+            <DNALoader lang={lang} />
           </div>
         )}
 
-        {/* Loading */}
-        <AnimatePresence>
-          {loading && (
-            <motion.div
-              className="flex justify-center py-16"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <DNALoader lang={lang} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {error && (
+          <div className="bg-rose-950/30 border border-rose-500/30 rounded-xl p-4 mb-6 flex items-center gap-3 text-sm text-rose-300">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 8v5" />
+              <path d="M12 16h.01" />
+            </svg>
+            <span>{error}</span>
+          </div>
+        )}
 
-        {/* Error */}
-        <AnimatePresence>
-          {error && (
-            <motion.div
-              className="bg-red-900/20 border border-red-500/30 rounded-xl p-4 text-center"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <p className="text-red-400">❌ {error}</p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {data && scores && !loading && (
+          <div className="space-y-6">
+            <ProfileHeader user={data.user} lang={lang} />
+            <LanguageDNA languageStats={data.languageStats} lang={lang} />
+            <ActivityHeatmap calendar={data.contributions.contributionCalendar} lang={lang} />
+            <StarDistribution repos={data.repos} lang={lang} />
+            <PersonalityRadar scores={scores} lang={lang} username={data.user.login} />
+            <Timeline repos={data.repos} lang={lang} />
 
-        {/* Results */}
-        <AnimatePresence>
-          {data && scores && !loading && (
-            <motion.div
-              className="space-y-6"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ staggerChildren: 0.1 }}
-            >
-              <ProfileHeader user={data.user} lang={lang} />
-              <LanguageDNA languageStats={data.languageStats} lang={lang} />
-              <ActivityHeatmap calendar={data.contributions.contributionCalendar} lang={lang} />
-              <StarDistribution repos={data.repos} lang={lang} />
-              <PersonalityRadar scores={scores} lang={lang} username={data.user.login} />
-              <Timeline repos={data.repos} lang={lang} />
+            <div className="flex flex-wrap items-start gap-3 pt-2">
+              <button
+                onClick={() => generateCard(data, scores)}
+                className="inline-flex h-10 items-center gap-2 px-4 rounded-lg text-sm font-medium bg-[#ededed] text-[#0f0f10] hover:bg-white transition-colors"
+                type="button"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="3" y="4" width="18" height="16" rx="2" />
+                  <circle cx="9" cy="10" r="1.5" />
+                  <path d="m21 16-5-5-6 6" />
+                </svg>
+                {t(lang, 'generateCard')}
+              </button>
+              <ReadmeGenerator data={data} scores={scores} lang={lang} />
+            </div>
+          </div>
+        )}
 
-              {/* Action buttons */}
-              <div className="flex flex-wrap gap-3 justify-center pt-4">
-                <button
-                  onClick={() => generateCard(data, scores)}
-                  className="px-6 py-3 rounded-lg font-semibold text-white transition-all hover:opacity-90"
-                  style={{ background: 'linear-gradient(135deg, #58a6ff, #bc8cff)' }}
-                >
-                  🖼️ {t(lang, 'generateCard')}
-                </button>
-                <ReadmeGenerator data={data} scores={scores} lang={lang} />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Empty state */}
         {!data && !loading && !error && (
-          <motion.div
-            className="text-center py-16 text-gh-muted"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            <p className="text-6xl mb-4">🧬</p>
-            <p className="text-lg">{lang === 'ja' ? 'ユーザー名を入力して解析を開始してください' : 'Enter a username to start analyzing'}</p>
-          </motion.div>
+          <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-white/[0.08] pt-8">
+            {[
+              {
+                title: lang === 'ja' ? '言語構成と比率' : 'Language profile',
+                desc: lang === 'ja' ? '全リポジトリのバイト数から主要言語と割合を集計します。' : 'Aggregates byte share across public repositories into a clean language breakdown.',
+                icon: (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="m8 8-4 4 4 4" />
+                    <path d="m16 8 4 4-4 4" />
+                    <path d="m14 5-4 14" />
+                  </svg>
+                ),
+              },
+              {
+                title: lang === 'ja' ? 'コントリビューション解析' : 'Contribution cadence',
+                desc: lang === 'ja' ? '直近6ヶ月のヒートマップと曜日別の開発リズムを可視化します。' : 'Inspects 6-month commit cadence, weekday distribution, and developer rhythm.',
+                icon: (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <rect x="3" y="4" width="18" height="16" rx="2" />
+                    <path d="M8 2v4M16 2v4M3 10h18" />
+                  </svg>
+                ),
+              },
+              {
+                title: lang === 'ja' ? '特性スコアと比較' : 'Traits & side-by-side compare',
+                desc: lang === 'ja' ? '5軸レーダー、年次タイムライン、README出力および2アカウント比較に対応。' : 'Five-axis radar metrics, annual repo timeline, README export, and dual-user comparison.',
+                icon: (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M3 17l6-6 4 4 8-8" />
+                    <path d="M17 7h4v4" />
+                  </svg>
+                ),
+              },
+            ].map((item) => (
+              <article key={item.title} className="rounded-xl border border-white/[0.08] bg-gh-surface p-5">
+                <div className="mb-3 inline-flex h-8 w-8 items-center justify-center rounded-md border border-white/[0.08] bg-gh-elevated text-gh-blue">
+                  {item.icon}
+                </div>
+                <h2 className="text-sm font-medium text-gh-text">{item.title}</h2>
+                <p className="mt-1.5 text-xs leading-relaxed text-gh-muted">{item.desc}</p>
+              </article>
+            ))}
+          </section>
         )}
       </main>
 
-      <footer className="border-t border-gh-border mt-12 py-6 text-center text-gh-muted text-sm">
-        <p>🧬 GitHub DNA Visualizer — Built with ❤️ using GitHub API</p>
+      <footer className="border-t border-white/[0.08] py-5">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gh-subtle">
+          <span>GitHub DNA Visualizer</span>
+          <span>Powered by GitHub REST & GraphQL API</span>
+        </div>
       </footer>
     </div>
   );
@@ -233,7 +275,6 @@ function ComparePage() {
     dataB.fetchData(trimB);
   }, [inputA, inputB, dataA, dataB]);
 
-  // Initialize from URL params on first mount only
   useEffect(() => {
     if (hasInitialized.current) return;
     hasInitialized.current = true;
@@ -251,53 +292,62 @@ function ComparePage() {
   const scoresB = dataB.data ? calculatePersonalityScores(dataB.data) : null;
 
   return (
-    <div className="min-h-screen bg-gh-bg">
-      <header className="border-b border-gh-border sticky top-0 z-50 bg-gh-bg/95 backdrop-blur">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <button onClick={() => navigate('/')} className="text-gh-muted hover:text-white transition-colors">
-              ←
+    <div className="min-h-screen bg-gh-bg text-gh-text">
+      <header className="border-b border-white/[0.08] sticky top-0 z-50 bg-gh-bg/95 backdrop-blur">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate('/')}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-white/[0.12] bg-gh-surface text-gh-muted hover:text-gh-text transition-colors"
+              type="button"
+              aria-label="Back"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M19 12H5" />
+                <path d="m12 19-7-7 7-7" />
+              </svg>
             </button>
-            <span className="text-2xl">🧬</span>
-            <span className="font-bold text-white hidden sm:inline">
-              {lang === 'ja' ? '比較モード' : 'Compare Mode'}
+            <BrandMark />
+            <span className="font-medium text-sm text-gh-text">
+              {lang === 'ja' ? '比較モード' : 'Compare mode'}
             </span>
           </div>
           <button
             onClick={() => setLang(l => l === 'ja' ? 'en' : 'ja')}
-            className="px-3 py-1.5 text-xs border border-gh-border text-gh-muted rounded-lg hover:border-gh-blue hover:text-gh-blue transition-colors"
+            className="h-8 px-2.5 text-xs font-mono border border-white/[0.12] bg-gh-surface text-gh-muted rounded-md hover:border-white/25 hover:text-gh-text transition-colors"
+            type="button"
           >
             {lang === 'ja' ? 'EN' : 'JA'}
           </button>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-center mb-8">
-          <span className="gradient-text">{lang === 'ja' ? '開発者DNA比較' : 'Developer DNA Comparison'}</span>
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+        <h1 className="text-2xl sm:text-3xl font-medium tracking-[-0.025em] text-gh-text mb-6">
+          {lang === 'ja' ? '開発者 DNA 比較' : 'Developer DNA comparison'}
         </h1>
 
-        <div className="flex flex-col sm:flex-row gap-3 mb-8 max-w-2xl mx-auto">
+        <div className="flex flex-col sm:flex-row gap-2.5 mb-8 max-w-2xl">
           <input
             type="text"
             value={inputA}
             onChange={e => setInputA(e.target.value)}
-            placeholder={lang === 'ja' ? 'ユーザー1' : 'User 1'}
-            className="flex-1 bg-gh-surface border border-gh-border rounded-lg px-4 py-3 text-gh-text placeholder-gh-muted font-mono focus:outline-none focus:border-gh-blue"
+            placeholder={lang === 'ja' ? 'ユーザー 1' : 'User 1'}
+            className="flex-1 h-11 bg-gh-surface border border-white/[0.12] rounded-lg px-3.5 text-sm text-gh-text placeholder:text-gh-subtle font-mono focus:outline-none focus:border-gh-blue"
           />
-          <span className="self-center text-gh-muted font-bold">VS</span>
+          <span className="self-center font-mono text-xs text-gh-subtle px-1">vs</span>
           <input
             type="text"
             value={inputB}
             onChange={e => setInputB(e.target.value)}
-            placeholder={lang === 'ja' ? 'ユーザー2' : 'User 2'}
-            className="flex-1 bg-gh-surface border border-gh-border rounded-lg px-4 py-3 text-gh-text placeholder-gh-muted font-mono focus:outline-none focus:border-gh-blue"
+            placeholder={lang === 'ja' ? 'ユーザー 2' : 'User 2'}
+            className="flex-1 h-11 bg-gh-surface border border-white/[0.12] rounded-lg px-3.5 text-sm text-gh-text placeholder:text-gh-subtle font-mono focus:outline-none focus:border-gh-blue"
           />
           <button
             onClick={handleCompare}
             disabled={dataA.loading || dataB.loading}
-            className="px-6 py-3 rounded-lg font-semibold text-white"
-            style={{ background: 'linear-gradient(135deg, #58a6ff, #bc8cff)' }}
+            className="h-11 px-5 rounded-lg text-sm font-medium bg-[#ededed] text-[#0f0f10] hover:bg-white transition-colors disabled:opacity-45"
+            type="button"
           >
             {lang === 'ja' ? '比較' : 'Compare'}
           </button>
@@ -309,18 +359,8 @@ function ComparePage() {
 
         {dataA.data && dataB.data && scoresA && scoresB && !dataA.loading && !dataB.loading && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <CompareColumn
-              data={dataA.data}
-              scores={scoresA}
-              username={usernameA}
-              lang={lang}
-            />
-            <CompareColumn
-              data={dataB.data}
-              scores={scoresB}
-              username={usernameB}
-              lang={lang}
-            />
+            <CompareColumn data={dataA.data} scores={scoresA} username={usernameA} lang={lang} />
+            <CompareColumn data={dataB.data} scores={scoresB} username={usernameB} lang={lang} />
           </div>
         )}
       </main>
